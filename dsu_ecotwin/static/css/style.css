@@ -1,0 +1,602 @@
+/* ==========================================================================
+   DSU EcoTwin - Smart Waste Management Digital Twin 2.0
+   Elevated Cyber-Eco Theme, Voice Assistant Pill & Executive Report Styles
+   ========================================================================== */
+
+:root {
+    --eco-green: #10b981;
+    --eco-green-light: #ecfdf5;
+    --eco-green-dark: #047857;
+    --eco-cyan: #06b6d4;
+    --eco-blue: #3b82f6;
+    --eco-red: #ef4444;
+    --eco-red-light: #fef2f2;
+    --eco-yellow: #f59e0b;
+    --eco-yellow-light: #fffbeb;
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(226, 232, 240, 0.8);
+    --voice-glow: rgba(16, 185, 129, 0.35);
+}
+
+/* Dark Mode Theme Variables */
+body.dark-mode {
+    --bg-page: #070c14;
+    --bg-card: #0d1522;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #1e293b;
+    --glass-bg: rgba(13, 21, 34, 0.88);
+    --glass-border: rgba(30, 41, 59, 0.85);
+    --voice-glow: rgba(16, 185, 129, 0.5);
+    background-color: var(--bg-page) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .bg-white {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.dark-mode .bg-slate-50 {
+    background-color: #0b111c !important;
+    border-color: var(--border-color) !important;
+}
+
+body.dark-mode .text-slate-900,
+body.dark-mode .text-slate-800,
+body.dark-mode .text-slate-700 {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .text-slate-500,
+body.dark-mode .text-slate-600,
+body.dark-mode .text-slate-400 {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .border-slate-100,
+body.dark-mode .border-slate-200 {
+    border-color: #1e293b !important;
+}
+
+body.dark-mode header {
+    background-color: rgba(11, 17, 28, 0.92) !important;
+    border-color: #1e293b !important;
+}
+
+/* General Typography & Box Sizing */
+* {
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+}
+
+/* Ambient Cyber-Eco Background Glow */
+.ambient-glow {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% -10%, rgba(16, 185, 129, 0.08), transparent 50%),
+                radial-gradient(circle at 90% 40%, rgba(6, 182, 212, 0.05), transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.dark-mode .ambient-glow {
+    background: radial-gradient(circle at 50% -10%, rgba(16, 185, 129, 0.12), transparent 55%),
+                radial-gradient(circle at 90% 40%, rgba(6, 182, 212, 0.08), transparent 45%),
+                radial-gradient(circle at 10% 70%, rgba(59, 130, 246, 0.06), transparent 45%);
+}
+
+/* Header & Glassmorphism */
+header {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+}
+
+/* Tab Navigation */
+.nav-tab {
+    position: relative;
+    color: var(--text-secondary);
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.nav-tab:hover {
+    color: var(--eco-green-dark);
+    background-color: rgba(16, 185, 129, 0.08);
+}
+
+.nav-tab.active {
+    border-bottom: 3px solid var(--eco-green);
+    color: var(--eco-green-dark);
+    font-weight: 600;
+    background-color: rgba(16, 185, 129, 0.12);
+}
+
+body.dark-mode .nav-tab.active {
+    color: #34d399 !important;
+    border-bottom-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.16) !important;
+}
+
+/* KPI Cards */
+.kpi-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px -4px rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Star Rating */
+.star-rating {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.star-rating .star {
+    cursor: pointer;
+    font-size: 28px;
+    color: #cbd5e1;
+    transition: transform 0.15s ease, color 0.15s ease;
+    user-select: none;
+}
+
+.star-rating .star:hover {
+    transform: scale(1.18);
+}
+
+.star-rating .star.active {
+    color: var(--eco-yellow);
+}
+
+.star-rating .star.hovered {
+    color: #facc15;
+}
+
+/* Bio Group Badges */
+.badge-bio {
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-nonbio {
+    background-color: #fef2f2;
+    color: #dc2626;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    border: 1px solid #fecaca;
+}
+
+body.dark-mode .badge-bio {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+body.dark-mode .badge-nonbio {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* Confidence Progress Bar */
+.confidence-bar {
+    height: 12px;
+    border-radius: 6px;
+    background-color: #e2e8f0;
+    overflow: hidden;
+    position: relative;
+}
+
+body.dark-mode .confidence-bar {
+    background-color: #1e293b;
+}
+
+.confidence-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Camera Preview */
+#camera-preview {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 380px;
+    object-fit: cover;
+    background-color: #0f172a;
+    border-radius: 16px;
+    display: block;
+}
+
+#camera-preview.hidden {
+    display: none !important;
+}
+
+/* Leaflet Maps */
+#bins-map,
+#twin-map {
+    height: 460px;
+    border-radius: 20px;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 14px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Digital Twin Sensor Gauge Components */
+.gauge-cylinder {
+    position: relative;
+    width: 38px;
+    height: 90px;
+    background-color: #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #cbd5e1;
+}
+
+body.dark-mode .gauge-cylinder {
+    background-color: #0b111c;
+    border-color: #243552;
+}
+
+.gauge-liquid {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+    border-radius: 0 0 10px 10px;
+}
+
+.liquid-green { background: linear-gradient(180deg, #34d399, #059669); }
+.liquid-yellow { background: linear-gradient(180deg, #facc15, #d97706); }
+.liquid-red { background: linear-gradient(180deg, #f87171, #dc2626); }
+
+/* Pulse Animation for Critical Alerts */
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+    50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+}
+
+.pulse-critical {
+    animation: pulseGlow 2s infinite;
+}
+
+/* Chatbot Window Styling */
+.chat-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* What-If Slider Styling */
+input[type=range] {
+    accent-color: #10b981;
+}
+
+/* Loading Spinners */
+.spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid var(--eco-green);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Leaderboard Badges */
+.rank-gold { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.rank-silver { background: linear-gradient(135deg, #f1f5f9, #e2e8f0); }
+.rank-bronze { background: linear-gradient(135deg, #fed7aa, #fdba74); }
+
+body.dark-mode .rank-gold { background: linear-gradient(135deg, #78350f, #92400e) !important; color: #fef3c7 !important; }
+body.dark-mode .rank-silver { background: linear-gradient(135deg, #1e293b, #334155) !important; }
+body.dark-mode .rank-bronze { background: linear-gradient(135deg, #7c2d12, #9a3412) !important; }
+
+/* Transitions */
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   FEATURE 1: 🎤 ECOBOT VOICE ASSISTANT PILL BAR STYLES
+   ========================================================================== */
+
+#ecobot-voice-bar-wrapper {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: calc(100% - 32px);
+    max-width: 680px;
+    pointer-events: none;
+}
+
+.ecobot-voice-pill {
+    pointer-events: auto;
+    background: rgba(13, 21, 34, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    border-radius: 9999px;
+    box-shadow: 0 10px 40px -10px var(--voice-glow), 0 0 20px 0 rgba(0, 0, 0, 0.4);
+    padding: 8px 14px 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ecobot-voice-pill:hover,
+.ecobot-voice-pill.is-listening {
+    border-color: #10b981;
+    box-shadow: 0 12px 45px -5px rgba(16, 185, 129, 0.6), 0 0 30px rgba(6, 182, 212, 0.3);
+}
+
+/* Mic Button with Pulsing Wave */
+.ecobot-mic-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-shrink: 0;
+}
+
+.ecobot-mic-btn:hover {
+    transform: scale(1.08);
+}
+
+.ecobot-mic-btn.active {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    animation: micActivePulse 1.4s infinite;
+}
+
+@keyframes micActivePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 16px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Audio Waveform Bars */
+.ecobot-waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 24px;
+    padding: 0 4px;
+}
+
+.ecobot-waveform span {
+    display: inline-block;
+    width: 3px;
+    height: 6px;
+    background: #34d399;
+    border-radius: 3px;
+    transition: height 0.15s ease;
+}
+
+.ecobot-waveform.animating span:nth-child(1) { animation: soundWave 0.8s ease-in-out infinite 0.1s; }
+.ecobot-waveform.animating span:nth-child(2) { animation: soundWave 0.8s ease-in-out infinite 0.25s; }
+.ecobot-waveform.animating span:nth-child(3) { animation: soundWave 0.8s ease-in-out infinite 0.4s; }
+.ecobot-waveform.animating span:nth-child(4) { animation: soundWave 0.8s ease-in-out infinite 0.15s; }
+.ecobot-waveform.animating span:nth-child(5) { animation: soundWave 0.8s ease-in-out infinite 0.3s; }
+
+@keyframes soundWave {
+    0%, 100% { height: 5px; opacity: 0.4; }
+    50% { height: 22px; opacity: 1; background: #06b6d4; }
+}
+
+/* Voice Input Field */
+.ecobot-input {
+    background: transparent;
+    border: none;
+    color: #f8fafc;
+    font-size: 13px;
+    flex-grow: 1;
+    outline: none;
+    padding: 4px 6px;
+}
+
+.ecobot-input::placeholder {
+    color: #94a3b8;
+}
+
+/* Floating Quick Command Chips */
+.ecobot-quick-chips {
+    pointer-events: auto;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    justify-content: center;
+    scrollbar-width: none;
+}
+
+.ecobot-quick-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.ecobot-chip-btn {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #e2e8f0;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ecobot-chip-btn:hover {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+    transform: translateY(-2px);
+}
+
+/* Voice Response Popover Bubble */
+#ecobot-speech-bubble {
+    pointer-events: auto;
+    background: rgba(13, 21, 34, 0.96);
+    backdrop-filter: blur(16px);
+    border: 1px solid #10b981;
+    border-radius: 18px;
+    padding: 12px 16px;
+    color: #f1f5f9;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.25);
+    margin-bottom: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    display: none;
+}
+
+/* ==========================================================================
+   FEATURE 2: 📊 EXECUTIVE DAILY MUNICIPAL REPORT MODAL & PRINT STYLES
+   ========================================================================== */
+
+#executive-report-modal {
+    display: none;
+}
+
+#executive-report-modal.active {
+    display: flex;
+}
+
+.report-dossier-card {
+    background: #ffffff;
+    color: #0f172a;
+    border-radius: 24px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+    border: 1px solid #e2e8f0;
+}
+
+body.dark-mode .report-dossier-card {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: #1e293b;
+}
+
+.report-official-header {
+    border-bottom: 2px solid #10b981;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.report-seal-badge {
+    border: 2px solid #10b981;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #10b981;
+    display: inline-block;
+}
+
+/* Print Specific Rules */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    
+    #executive-printable-report,
+    #executive-printable-report * {
+        visibility: visible !important;
+    }
+
+    #executive-printable-report {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: white !important;
+        color: black !important;
+        padding: 24px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Hide non-printable UI */
+    header,
+    footer,
+    #toast-container,
+    #ecobot-voice-bar-wrapper,
+    .no-print {
+        display: none !important;
+    }
+}

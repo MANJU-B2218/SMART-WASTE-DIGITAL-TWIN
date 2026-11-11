@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSU EcoTwin - Smart Campus Waste Management Digital Twin (Dayananda Sagar University)</title>
+
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6.5 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'eco-green': '#10b981',
+                        'eco-green-light': '#ecfdf5',
+                        'eco-green-dark': '#047857',
+                        'eco-cyan': '#06b6d4',
+                        'eco-red': '#ef4444',
+                        'eco-yellow': '#f59e0b'
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Leaflet CSS & JS CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- TensorFlow.js & MobileNet Neural Vision Engine for 100% Real Camera Detection -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+
+    <!-- Custom Elevated CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300 relative">
+
+    <!-- Background Ambient Glow -->
+    <div class="ambient-glow"></div>
+
+    <!-- Hidden Google Translate Element -->
+    <div id="google_translate_element" class="hidden"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-emerald-100 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-200 dark:shadow-none">
+                        <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">DSU <span class="text-emerald-500">EcoTwin</span></span>
+                            <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 text-emerald-800 rounded-full border border-emerald-200 dark:border-emerald-800">Harohalli Campus</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Dayananda Sagar University • Real-Time AI Vision &amp; IoT Twin</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Tabs -->
+                <nav class="hidden xl:flex items-center space-x-1">
+                    <button id="nav-btn-dashboard" onclick="switchTab('dashboard')" class="nav-tab active flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_dashboard">Dashboard</span>
+                    </button>
+                    <button id="nav-btn-scan" onclick="switchTab('scan')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-camera"></i> <span data-i18n="nav_scan">Scan Waste</span>
+                    </button>
+                    <button id="nav-btn-digital-twin" onclick="switchTab('digital-twin')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-network-wired text-emerald-600"></i> <span data-i18n="nav_twin">Digital Twin</span>
+                    </button>
+                    <button id="nav-btn-report-waste" onclick="switchTab('report-waste')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-bullhorn text-amber-500"></i> <span data-i18n="nav_report">Report Waste</span>
+                    </button>
+                    <button id="nav-btn-alerts" onclick="switchTab('alerts')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold relative">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span data-i18n="nav_alerts">Alerts</span>
+                        <span id="nav-alerts-badge" class="ml-1 px-1.5 py-0.2 bg-red-500 text-white rounded-full text-[10px] font-bold hidden">0</span>
+                    </button>
+                    <button id="nav-btn-find-bins" onclick="switchTab('find-bins')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-location-dot"></i> <span data-i18n="nav_bins">Nearby Bins</span>
+                    </button>
+                    <button id="nav-btn-ai-assistant" onclick="switchTab('ai-assistant')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-robot text-purple-600"></i> <span data-i18n="nav_ai">AI Assistant</span>
+                    </button>
+                    <button id="nav-btn-leaderboard" onclick="switchTab('leaderboard')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> <span data-i18n="nav_leaderboard">Leaderboard</span>
+                    </button>
+                    <button id="nav-btn-reviews" onclick="switchTab('reviews')" class="nav-tab flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold">
+                        <i class="fa-solid fa-star text-amber-400"></i> <span data-i18n="nav_reviews">Reviews</span>
+                    </button>
+
+                    <!-- Executive Municipal Report Export Button -->
+                    <button onclick="openExecutiveReportModal()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md shadow-indigo-200 dark:shadow-none transition transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-file-invoice"></i> <span>Executive Export</span>
+                    </button>
+                </nav>
+
+                <!-- Header Actions: IoT Status, Language & Dark Mode -->
+                <div class="flex items-center gap-3">
+                    <!-- IoT Status Badge -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="font-bold">DSU IoT Active</span>
+                        <span class="text-[10px] bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100 px-1.5 py-0.2 rounded font-mono">Harohalli</span>
+                    </div>
+
+                    <!-- Voice Assistant Quick Trigger -->
+                    <button onclick="toggleEcoBotVoice()" title="Toggle EcoBot Voice Assistant (English / Kannada / Hindi)" class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-base transition border border-emerald-200 dark:border-slate-700 shadow-sm">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </button>
+
+                    <!-- Multi-language Selector -->
+                    <select id="lang-select" onchange="changeLanguage(this.value)" class="text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-2.5 py-2 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        <option value="en">English</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                    </select>
+
+                    <!-- Dark Mode Toggle Button -->
+                    <button id="btn-theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark/Light Mode" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 flex items-center justify-center text-base transition border border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+
+                    <!-- Mobile Menu Button -->
+                    <div class="xl:hidden flex items-center">
+                        <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 focus:outline-none transition">
+                            <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu Dropdown -->
+        <div id="mobile-menu" class="hidden xl:hidden border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-4 pt-2 pb-4 space-y-1 shadow-lg">
+            <button onclick="switchTab('dashboard'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-emerald-600"></i> <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('scan'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-camera text-emerald-600"></i> <span>Scan Waste (Real-Time Vision)</span>
+            </button>
+            <button onclick="switchTab('digital-twin'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-network-wired text-emerald-600"></i> <span>Digital Twin</span>
+            </button>
+            <button onclick="openExecutiveReportModal(); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-emerald-600 flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-file-invoice"></i> <span>Executive Daily Municipal Report</span>
+            </button>
+            <button onclick="switchTab('report-waste'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-amber-500"></i> <span>Report Waste</span>
+            </button>
+            <button onclick="switchTab('alerts'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-red-500"></i> <span>Alerts Hub</span>
+            </button>
+            <button onclick="switchTab('find-bins'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-emerald-600"></i> <span>Nearby Facilities</span>
+            </button>
+            <button onclick="switchTab('ai-assistant'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-robot text-purple-600"></i> <span>AI Assistant &amp; Reports</span>
+            </button>
+            <button onclick="switchTab('leaderboard'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-trophy text-amber-500"></i> <span>Leaderboard</span>
+            </button>
+            <button onclick="switchTab('reviews'); toggleMobileMenu();" class="w-full text-left py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 flex items-center gap-2">
+                <i class="fa-solid fa-star text-amber-400"></i> <span>Reviews</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Workspace -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10 pb-36">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: DASHBOARD                           -->
+        <!-- ========================================== -->
+        <section id="tab-dashboard" class="tab-pane fade-in">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="dash_title">DSU Campus Smart Waste Command Center</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1" data-i18n="dash_subtitle">Real-time IoT telemetry, AI computer vision segregation, and digital twin fleet management across Dayananda Sagar University Harohalli Campus.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="loadDashboard()" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 text-sm font-medium shadow-sm transition">
+                        <i class="fa-solid fa-arrows-rotate text-emerald-600" id="dash-refresh-icon"></i>
+                        <span>Refresh</span>
+                    </button>
+                    <button onclick="openExecutiveReportModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 rounded-xl text-sm font-bold shadow-sm transition">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <span>Executive Report</span>
+                    </button>
+                    <button onclick="switchTab('scan')" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-emerald-200 transition">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Scan New Waste</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="kpi-card flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" data-i18n="kpi_scans">Total Classified</p>
+                        <h3 id="kpi-total-scans" class="text-3xl font-extrabold text-slate-900 dark:text-white">0</h3>
+                        <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Real-Time TensorFlow Vision
+                        </p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-recycle"></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card flex items-center justify-between cursor-pointer" onclick="switchTab('digital-twin')">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" data-i18n="kpi_full_bins">Full Bins (>80%)</p>
+                        <h3 id="kpi-full-bins" class="text-3xl font-extrabold text-red-500">0</h3>
+                        <p class="text-xs text-red-500 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Action required
+                        </p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950 text-red-500 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-trash-can-arrow-up"></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" data-i18n="kpi_diversion">Bio-Degradable %</p>
+                        <h3 id="kpi-bio-percent" class="text-3xl font-extrabold text-emerald-600">0%</h3>
+                        <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Wet waste diversion
+                        </p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-950 text-green-600 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card flex items-center justify-between cursor-pointer" onclick="switchTab('digital-twin')">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" data-i18n="kpi_trucks">Active Fleet Trucks</p>
+                        <h3 id="kpi-active-trucks" class="text-3xl font-extrabold text-blue-600">2</h3>
+                        <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> GPS Telemetry Live
+                        </p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-truck"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div id="dashboard-charts-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Waste Composition by Category</h3>
+                            <p class="text-xs text-slate-400">Classified items across materials</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-lg">Real-Time AI</span>
+                    </div>
+                    <div class="relative w-full h-72">
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Daily Segregation Activity</h3>
+                            <p class="text-xs text-slate-400">Campus classification volume over time</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-xs font-semibold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded-lg">30-Day Trend</span>
+                    </div>
+                    <div class="relative w-full h-72">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Alert Stream Widget -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg">Active Campus Alerts Hub</h3>
+                    </div>
+                    <button onclick="switchTab('alerts')" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+                        View All Alerts &rarr;
+                    </button>
+                </div>
+                <div id="dash-alerts-list" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: SCAN WASTE (CV + MOBILENET REAL-TIME) -->
+        <!-- ========================================== -->
+        <section id="tab-scan" class="tab-pane hidden fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-full text-xs font-bold mb-2">
+                        <i class="fa-solid fa-microchip"></i> TensorFlow.js Neural Vision Powered
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="scan_header">AI Waste Classification &amp; Web Identification</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2 max-w-xl mx-auto">Point your webcam or upload a photo. The system runs deep neural vision directly on the frame to detect the <strong>EXACT item</strong> you show!</p>
+                </div>
+
+                <!-- Mode Switcher -->
+                <div class="flex justify-center mb-6">
+                    <div class="inline-flex p-1.5 bg-slate-200/70 dark:bg-slate-800 rounded-2xl">
+                        <button id="scan-mode-camera-btn" onclick="setScanMode('camera')" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>Live Camera (Real Vision)</span>
+                        </button>
+                        <button id="scan-mode-upload-btn" onclick="setScanMode('upload')" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>Upload Image</span>
+                        </button>
+                        <button id="scan-mode-search-btn" onclick="setScanMode('search')" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                            <i class="fa-brands fa-google text-blue-600"></i>
+                            <span>Google Search Engine</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <!-- CAMERA SECTION -->
+                    <div id="camera-section" class="flex flex-col items-center">
+                        <div class="w-full max-w-2xl flex flex-wrap items-center justify-between gap-3 mb-3 px-1">
+                            <div class="flex items-center gap-2">
+                                <span id="camera-status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                                <span id="camera-status-text" class="text-xs font-semibold text-slate-500">Camera Inactive</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="btn-switch-camera" onclick="switchCameraFacing()" class="hidden text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 font-medium items-center gap-1">
+                                    <i class="fa-solid fa-arrows-rotate"></i> <span>Flip Camera</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Real-Time Live Detection Banner -->
+                        <div id="camera-live-detection-banner" class="hidden w-full max-w-2xl mb-3 px-4 py-2 bg-slate-900/90 text-emerald-400 rounded-xl text-xs font-mono flex items-center justify-between border border-emerald-500/40 shadow-inner">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-crosshairs animate-pulse"></i>
+                                <span>Real-Time Detection: <strong id="live-detected-label" class="text-white">Scanning...</strong></span>
+                            </span>
+                            <span id="live-detected-prob" class="text-emerald-300 font-bold">--%</span>
+                        </div>
+
+                        <div id="camera-container" class="w-full max-w-2xl relative bg-slate-900 rounded-2xl overflow-hidden aspect-video flex items-center justify-center border-2 border-slate-200 dark:border-slate-700 shadow-inner">
+                            <video id="camera-preview" autoplay playsinline muted class="w-full h-full object-cover hidden" style="width: 100%; height: 100%; min-height: 380px;"></video>
+
+                            <div id="camera-placeholder" class="text-center p-6 text-slate-400">
+                                <div class="w-16 h-16 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3 text-2xl">
+                                    <i class="fa-solid fa-video text-emerald-400"></i>
+                                </div>
+                                <p class="font-semibold text-slate-200 text-base">Camera Ready to Activate</p>
+                                <p class="text-xs text-slate-400 mt-1">Click "Start Camera" below to grant permission and detect items in real-time</p>
+                            </div>
+
+                            <div id="camera-target-overlay" class="pointer-events-none absolute inset-8 border-2 border-emerald-400/60 rounded-2xl hidden flex items-center justify-center">
+                                <div class="text-emerald-300 text-xs font-mono bg-black/60 px-3 py-1 rounded-full backdrop-blur">Center waste item in frame</div>
+                            </div>
+                        </div>
+
+                        <canvas id="camera-canvas" class="hidden"></canvas>
+
+                        <!-- Contributor Username Input -->
+                        <div class="w-full max-w-md mt-6">
+                            <label for="camera-username" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                                Contributor Username <span class="text-slate-400 font-normal">(Earn Eco-Points)</span>
+                            </label>
+                            <div class="relative">
+                                <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="camera-username" placeholder="e.g. Manjunath or DSU_Engg" class="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-100">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+                            <button id="btn-start-camera" onclick="startCamera()" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 transition">
+                                <i class="fa-solid fa-power-off"></i>
+                                <span>Start Camera</span>
+                            </button>
+                            <button id="btn-capture" onclick="captureAndClassify()" class="hidden inline-flex items-center gap-2 px-7 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-xl shadow-lg shadow-emerald-300 transition">
+                                <i class="fa-solid fa-camera-retro"></i>
+                                <span>Capture &amp; Classify Exact Item</span>
+                            </button>
+                            <button id="btn-stop-camera" onclick="stopCamera()" class="hidden inline-flex items-center gap-2 px-5 py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition">
+                                <i class="fa-solid fa-stop"></i>
+                                <span>Stop Camera</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- UPLOAD SECTION -->
+                    <div id="upload-section" class="hidden flex flex-col items-center">
+                        <div id="upload-dropzone" onclick="document.getElementById('image-file-input').click()" class="w-full max-w-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-50/40 rounded-2xl p-8 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[260px]">
+                            <input type="file" id="image-file-input" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+                            <div id="upload-placeholder" class="space-y-3">
+                                <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">Click or drag image file here to classify</div>
+                                <p class="text-xs text-slate-400">Supported formats: JPG, PNG, WEBP, JPEG</p>
+                            </div>
+                            <div id="upload-preview-container" class="hidden relative max-h-72 w-full flex items-center justify-center">
+                                <img id="image-preview" src="#" alt="Waste preview" class="max-h-72 max-w-full rounded-xl object-contain shadow-sm">
+                                <button type="button" onclick="event.stopPropagation(); clearImagePreview();" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white hover:bg-black/80 flex items-center justify-center transition">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex flex-col items-center gap-4">
+                            <button id="btn-upload-classify" onclick="uploadAndClassify()" class="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 transition">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>Classify Uploaded Item</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH SECTION -->
+                    <div id="search-section" class="hidden flex flex-col items-center">
+                        <div class="w-full max-w-2xl bg-gradient-to-br from-blue-50/60 to-emerald-50/60 dark:from-slate-800/80 dark:to-slate-800/40 border border-blue-100 dark:border-slate-700 rounded-3xl p-6 md:p-8">
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md shadow-blue-200">
+                                    <i class="fa-brands fa-google"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">Google Search Engine Waste Intelligence</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Detect exact item &amp; brand name, composition, biodegradability, and municipal bin</p>
+                                </div>
+                            </div>
+
+                            <form id="google-search-form" onsubmit="handleSearchDetectSubmit(event)" class="space-y-4">
+                                <div>
+                                    <label for="google-search-input" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                        Enter Item Name, Brand, or Material
+                                    </label>
+                                    <div class="relative">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                        <input type="text" id="google-search-input" placeholder="e.g. Bisleri 500ml water bottle, banana peel, Duracell AA battery..." class="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">⚡ Quick 1-Tap Detection Examples:</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button type="button" onclick="quickSearchItem('Bisleri plastic water bottle')" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-blue-50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition">
+                                            🧴 Bisleri Bottle
+                                        </button>
+                                        <button type="button" onclick="quickSearchItem('Banana peel organic waste')" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-emerald-50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition">
+                                            🍌 Banana Peel
+                                        </button>
+                                        <button type="button" onclick="quickSearchItem('Duracell AA battery e-waste')" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-red-50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition">
+                                            🔋 AA Battery
+                                        </button>
+                                        <button type="button" onclick="quickSearchItem('Coca Cola aluminum soda can')" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-amber-50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition">
+                                            🥫 Soda Can
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 flex justify-center">
+                                    <button type="submit" id="btn-search-detect" class="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md shadow-blue-200 transition">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <span>Search &amp; Segregate Waste</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- SPINNER -->
+                    <div id="scan-loading" class="hidden my-8 flex flex-col items-center justify-center text-center">
+                        <div class="spinner mb-4"></div>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">Running Deep Learning Neural Vision...</h4>
+                        <p class="text-xs text-slate-400 mt-1">Analyzing pixels across 1000 object categories via TensorFlow.js MobileNet</p>
+                    </div>
+
+                    <!-- CLASSIFICATION RESULT CARD -->
+                    <div id="result-card" class="hidden mt-8 p-6 md:p-8 bg-slate-50 dark:bg-slate-800/80 rounded-3xl border border-slate-200 dark:border-slate-700 fade-in">
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Verified Identification</span>
+                                <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded text-[10px] font-bold"><i class="fa-solid fa-brain mr-1"></i>TensorFlow MobileNet</span>
+                            </div>
+                            <span id="result-timestamp" class="text-xs text-slate-400 font-mono">Just now</span>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs uppercase font-semibold text-slate-400 tracking-wider">Detected Specific Item</span>
+                                    <span id="result-detection-engine" class="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <i class="fa-solid fa-microchip text-emerald-600"></i> Real Camera Neural Vision
+                                    </span>
+                                </div>
+                                <h2 id="result-item-name" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-0.5">Water Bottle</h2>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span id="result-material-type" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">Plastic (PET 1)</span>
+                                    <span class="text-xs text-slate-400 font-mono">Camera object: <strong id="result-exact-label" class="text-emerald-600 dark:text-emerald-400 font-bold">water bottle</strong></span>
+                                </div>
+                            </div>
+                            <div>
+                                <span id="result-bio-badge" class="badge-bio inline-flex items-center gap-2 px-4 py-2 text-sm font-bold">
+                                    <i id="result-bio-icon" class="fa-solid fa-leaf"></i>
+                                    <span id="result-bio-text">Non-Biodegradable</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Municipal Bin Tip Card -->
+                        <div id="result-bin-card" class="p-5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-2xl shadow-sm mb-6 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl">
+                                    <i class="fa-solid fa-trash-can" id="result-bin-icon"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs uppercase tracking-wider text-green-100 font-semibold">Recommended Municipal Bin</span>
+                                    <h3 id="result-bin-tip" class="text-xl font-extrabold">Dry Waste Bin (Blue)</h3>
+                                    <p id="result-bin-desc" class="text-xs text-green-100 mt-0.5">Suitable for clean dry recyclables, packaging, and unsoiled plastics.</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 bg-white text-emerald-800 rounded-full text-xs font-bold shadow-sm">Correct Sorting</span>
+                        </div>
+
+                        <!-- Confidence Bar -->
+                        <div class="mb-6 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Neural Model Prediction Confidence</span>
+                                <span id="result-confidence-text" class="text-sm font-extrabold text-emerald-600">95%</span>
+                            </div>
+                            <div class="confidence-bar w-full">
+                                <div id="result-confidence-fill" class="confidence-fill bg-emerald-500" style="width: 95%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Multi-Language Actionable Advice Box -->
+                        <div class="space-y-3 mb-6">
+                            <!-- English Advice -->
+                            <div class="p-4 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">EN</div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-emerald-950 dark:text-emerald-200 uppercase tracking-wider">Actionable Disposal Advice (English)</h4>
+                                    <p id="result-disposal-tip" class="text-sm text-emerald-900 dark:text-emerald-300 mt-0.5 leading-relaxed">Rinse before depositing in recycling container.</p>
+                                </div>
+                            </div>
+
+                            <!-- Kannada Advice -->
+                            <div class="p-4 bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">ಕನ್ನಡ</div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider">ವಿಲೇವಾರಿ ಮಾಹಿತಿ (ಕನ್ನಡ / Kannada)</h4>
+                                    <p id="result-disposal-tip-kn" class="text-sm text-amber-900 dark:text-amber-300 mt-0.5 leading-relaxed">ದ್ರವಗಳನ್ನು ಖಾಲಿ ಮಾಡಿ ಒಣ ಕಸದ ನೀಲಿ ಬುಟ್ಟಿಗೆ ಹಾಕಿ.</p>
+                                </div>
+                            </div>
+
+                            <!-- Hindi Advice -->
+                            <div class="p-4 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">हिन्दी</div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-blue-950 dark:text-blue-200 uppercase tracking-wider">निपटान निर्देश (हिन्दी / Hindi)</h4>
+                                    <p id="result-disposal-tip-hi" class="text-sm text-blue-900 dark:text-blue-300 mt-0.5 leading-relaxed">तरल पदार्थों को खाली करें और नीले सूखे कचरे के डिब्बे में डालें।</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+                            <button type="button" onclick="resetScanner()" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition shadow">
+                                <i class="fa-solid fa-arrow-rotate-left"></i>
+                                <span>Scan Another Item</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: DIGITAL TWIN & BIN MONITOR          -->
+        <!-- ========================================== -->
+        <section id="tab-digital-twin" class="tab-pane hidden fade-in">
+            <div class="space-y-8">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold mb-2">
+                            <i class="fa-solid fa-network-wired"></i> Digital Twin Real-Time Simulation
+                        </div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Smart Waste Digital Twin</h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Virtual representation of all municipal smart bins &amp; collection fleet powered by IoT sensors.</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button onclick="optimizeTruckRoute()" class="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-200 transition">
+                            <i class="fa-solid fa-route"></i>
+                            <span>Optimize Truck Route (TSP)</span>
+                        </button>
+                        <button onclick="openExecutiveReportModal()" class="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-200 transition">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            <span>Executive Export</span>
+                        </button>
+                        <button onclick="loadDigitalTwinData()" class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition shadow-sm">
+                            <i class="fa-solid fa-arrows-rotate text-emerald-600"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- WHAT-IF SIMULATION -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-3xl p-6 md:p-8 shadow-xl">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-700">
+                        <div>
+                            <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold tracking-wider uppercase mb-1">
+                                <i class="fa-solid fa-flask"></i> Predictive What-If Engine
+                            </div>
+                            <h3 class="text-2xl font-bold">"What Happens If We Skip Collection?"</h3>
+                            <p class="text-xs text-slate-400 mt-1 max-w-xl">Simulate municipal delays across DSU campus to predict overflowing hotspots before contamination occurs.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4 bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+                            <div>
+                                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Delay Duration</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="range" id="what-if-days-slider" min="0" max="4" value="0" step="1" oninput="runWhatIfSimulation()" class="w-32 cursor-pointer">
+                                    <span id="what-if-days-label" class="text-sm font-bold text-emerald-400 font-mono">0 Days (Normal)</span>
+                                </div>
+                            </div>
+                            <div class="border-l border-slate-700 pl-4">
+                                <label class="block text-[11px] text-slate-400 font-semibold mb-1">Weather Factor</label>
+                                <select id="what-if-weather" onchange="runWhatIfSimulation()" class="text-xs bg-slate-900 text-white border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none">
+                                    <option value="normal">Normal Weather (25°C)</option>
+                                    <option value="hot">Summer Heat (Fermentation +50%)</option>
+                                    <option value="monsoon">Monsoon Storm (Gas +80%)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                        <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                            <span class="text-[11px] text-slate-400 uppercase font-semibold">Predicted Overflows</span>
+                            <div id="whatif-overflow-count" class="text-2xl font-extrabold text-red-400 mt-1">0 Bins</div>
+                            <span class="text-[10px] text-slate-400">Exceeding 100% capacity</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                            <span class="text-[11px] text-slate-400 uppercase font-semibold">Projected Solid Waste</span>
+                            <div id="whatif-waste-kg" class="text-2xl font-extrabold text-amber-400 mt-1">-- kg</div>
+                            <span class="text-[10px] text-slate-400">Total accumulated mass</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                            <span class="text-[11px] text-slate-400 uppercase font-semibold">Est. Emergency Cleanup</span>
+                            <div id="whatif-penalty-cost" class="text-2xl font-extrabold text-red-300 mt-1">₹0</div>
+                            <span class="text-[10px] text-slate-400">Campus crew overtime</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                            <span class="text-[11px] text-slate-400 uppercase font-semibold">Emergency Fuel Wasted</span>
+                            <div id="whatif-fuel-litres" class="text-2xl font-extrabold text-blue-400 mt-1">0.0 L</div>
+                            <span class="text-[10px] text-slate-400">Unscheduled fleet transit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIGITAL TWIN MAP & ROUTE VIEW -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Virtual Bin Grid &amp; Fleet Tracker</h3>
+                            <p class="text-xs text-slate-400">Green (&lt;50%), Yellow (50-80%), Red (&gt;80% Full), Purple (Gas/Odor Alert)</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Normal</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400"></span> Moderate</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span> Full/Overflow</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-600"></span> Gas Alert</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-truck text-blue-600"></i> Fleet</span>
+                        </div>
+                    </div>
+
+                    <div id="twin-map" class="w-full"></div>
+
+                    <div id="route-optimization-panel" class="hidden mt-6 p-5 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-route"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-sm">Smart Optimized Route Active</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-300" id="route-stats-text">Visiting critical bins. Saved 9.4 km travel &amp; 3.1L diesel.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm" id="route-co2-badge">
+                                -8.3 kg CO2
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIVE IOT SMART BIN SENSORS GRID -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Smart IoT Bins Telemetry Grid</h3>
+                            <p class="text-xs text-slate-400">Ultrasonic HC-SR04, MQ-135 Gas Sensor, Load Cell Mass &amp; Battery</p>
+                        </div>
+                    </div>
+                    <div id="smart-bins-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: REPORT WASTE (CITIZEN REPORTING)    -->
+        <!-- ========================================== -->
+        <section id="tab-report-waste" class="tab-pane hidden fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold mb-2">
+                        <i class="fa-solid fa-bullhorn"></i> Campus &amp; Public Civic Engagement
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Report Waste Overflow or Dumping</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2 max-w-xl mx-auto">Help keep DSU campus clean. Snap a photo of an overflowing bin or roadside dumping spot and report it directly to campus facilities dispatch.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2">
+                        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                            <form id="waste-report-form" onsubmit="submitWasteReport(event)" class="space-y-5">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Your Name</label>
+                                        <input type="text" id="report-name" required placeholder="Manjunath" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Phone Number (Optional)</label>
+                                        <input type="tel" id="report-phone" placeholder="+91 98765 43210" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Issue Category</label>
+                                        <select id="report-issue-type" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            <option value="Overflowing Bin">Overflowing Smart Bin</option>
+                                            <option value="Illegal Roadside Dumping">Illegal Dumping Spot</option>
+                                            <option value="Hazardous / Chemical Waste">Hazardous / E-Waste Dump</option>
+                                            <option value="Damaged Bin / Broken Lid">Damaged Bin / Broken Lid</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Location / Landmark</label>
+                                        <div class="relative">
+                                            <input type="text" id="report-location" required placeholder="e.g. DSU Food Court, School of Engineering, Hostel Block A" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                            <button type="button" onclick="detectReportLocation()" title="Auto-detect GPS" class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-700">
+                                                <i class="fa-solid fa-location-crosshairs text-base"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Incident Description</label>
+                                    <textarea id="report-desc" required rows="3" placeholder="Describe the severity, foul odor, or overflow..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Attach Photo Evidence</label>
+                                    <div class="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('report-photo-input').click()">
+                                        <input type="file" id="report-photo-input" accept="image/*" class="hidden" onchange="handleReportPhoto(event)">
+                                        <div id="report-photo-placeholder" class="text-xs text-slate-500">
+                                            <i class="fa-solid fa-camera text-emerald-600 text-lg mb-1"></i>
+                                            <p class="font-medium">Click to upload incident photo</p>
+                                        </div>
+                                        <div id="report-photo-preview" class="hidden">
+                                            <img id="report-photo-img" src="#" class="max-h-36 mx-auto rounded-lg shadow-sm">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="btn-submit-report" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-200 transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span>Submit Incident Report</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1">
+                        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4">Recent Campus Reports</h3>
+                            <div id="recent-reports-list" class="space-y-3">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: ALERTS HUB                          -->
+        <!-- ========================================== -->
+        <section id="tab-alerts" class="tab-pane hidden fade-in">
+            <div class="max-w-5xl mx-auto space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Municipal Alerts Command Hub</h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Live escalation feed for overflowing smart bins, gas leaks, and citizen reports across DSU campus.</p>
+                    </div>
+                    <button onclick="loadAlertsHub()" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 text-sm font-medium shadow-sm">
+                        <i class="fa-solid fa-arrows-rotate text-emerald-600"></i> Refresh
+                    </button>
+                </div>
+
+                <div id="alerts-hub-container" class="space-y-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: FIND BINS (GPS LEAFLET)             -->
+        <!-- ========================================== -->
+        <section id="tab-find-bins" class="tab-pane hidden fade-in">
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold mb-2">
+                                <i class="fa-solid fa-graduation-cap"></i> DSU Harohalli Campus &amp; Public Locator
+                            </div>
+                            <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Nearby Campus &amp; Public Waste Facilities</h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Locate smart bins, recycling points, compost yards, and industrial depots across DSU Harohalli campus with direct Google Maps navigation.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button type="button" onclick="loadDsuCampusFacilities()" class="inline-flex items-center gap-2 px-5 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md shadow-blue-200 transition">
+                                <i class="fa-solid fa-graduation-cap text-base"></i>
+                                <span>DSU Campus Facilities</span>
+                            </button>
+                            <button id="btn-find-bins" onclick="findNearbyBins()" class="inline-flex items-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 transition">
+                                <i class="fa-solid fa-crosshairs text-base"></i>
+                                <span>Find Nearby Bins</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="bins-loading" class="hidden my-8 flex flex-col items-center justify-center text-center">
+                        <div class="spinner mb-4"></div>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Searching for Nearby Waste Facilities...</h4>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-slate-900 p-3 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div id="bins-map" class="w-full"></div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-lg">Facility Listings</h3>
+                                <p class="text-xs text-slate-400">Sorted by distance from coordinates</p>
+                            </div>
+                            <span id="bins-count-badge" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs rounded-full">0 found</span>
+                        </div>
+
+                        <div id="bins-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 7: GENERATIVE AI & MUNICIPAL REPORTS   -->
+        <!-- ========================================== -->
+        <section id="tab-ai-assistant" class="tab-pane hidden fade-in">
+            <div class="max-w-6xl mx-auto space-y-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 rounded-full text-xs font-bold mb-2">
+                            <i class="fa-solid fa-robot"></i> Generative AI Intelligence Suite
+                        </div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">AI Assistant &amp; Auto-Report Generator</h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Trilingual LLM dispatch advice, interactive voice assistant, and automated municipality reports.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openExecutiveReportModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md transition">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            <span>Executive Report Dossier</span>
+                        </button>
+                        <button onclick="generateDailyReport()" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md shadow-purple-200 transition">
+                            <i class="fa-solid fa-file-contract"></i>
+                            <span>Quick Daily Report</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- LLM RECOMMENDATIONS ROW -->
+                <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>Generative AI Dispatch Recommendations</span>
+                    </h3>
+                    <div id="ai-recommendations-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- INTERACTIVE CHATBOT & REPORT PREVIEW -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Chatbot Assistant -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-[520px]">
+                        <div>
+                            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 flex items-center justify-center text-lg">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">EcoBot Assistant</h4>
+                                        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Trilingual (English, ಕನ್ನಡ, हिन्दी)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="chat-messages" class="chat-scroll space-y-3 p-1">
+                                <div class="flex items-start gap-2.5">
+                                    <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div class="bg-purple-50 dark:bg-purple-950/40 text-slate-800 dark:text-slate-200 p-3.5 rounded-2xl rounded-tl-none text-xs leading-relaxed max-w-[85%]">
+                                        Hello! I am **EcoBot**. You can talk to me in **English**, **ಕನ್ನಡ (Kannada)**, or **हिन्दी (Hindi)** using your microphone below!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center gap-2 overflow-x-auto py-2 mb-2">
+                                <button type="button" onclick="sendQuickChat('Which bins are full right now?')" class="text-[11px] bg-slate-100 dark:bg-slate-800 hover:bg-purple-50 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full whitespace-nowrap transition">
+                                    Full Bins?
+                                </button>
+                                <button type="button" onclick="sendQuickChat('ಪ್ಲಾಸ್ಟಿಕ್ ಬಾಟಲ್ ಎಲ್ಲಿ ಹಾಕಬೇಕು?')" class="text-[11px] bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full whitespace-nowrap transition">
+                                    ಪ್ಲಾಸ್ಟಿಕ್ ಬಾಟಲ್? (KN)
+                                </button>
+                                <button type="button" onclick="sendQuickChat('बैटरी का निपटान कैसे करें?')" class="text-[11px] bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full whitespace-nowrap transition">
+                                    बैटरी निपटान? (HI)
+                                </button>
+                            </div>
+
+                            <form onsubmit="handleChatSubmit(event)" class="flex items-center gap-2">
+                                <input type="text" id="chat-input" placeholder="Ask disposal advice in English, Kannada, or Hindi..." class="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <button type="submit" id="btn-chat-send" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Municipal Report Preview -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-[520px]">
+                        <div>
+                            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-file-contract text-purple-600"></i>
+                                    <h4 class="font-bold text-slate-900 dark:text-white text-sm">Automated Municipality Daily Report</h4>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openExecutiveReportModal()" class="text-xs text-indigo-600 hover:underline font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-expand"></i> Full Dossier
+                                    </button>
+                                    <button onclick="printReport()" class="text-xs text-purple-600 hover:underline font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-print"></i> Print
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="report-view-container" class="chat-scroll p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-800 dark:text-slate-200 leading-relaxed">
+                                <p class="text-slate-400 text-center py-12">Click "Quick Daily Report" above or "Executive Report Dossier" for full export.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 text-[11px] text-slate-400 text-center">
+                            Compiled automatically via DSU Harohalli Campus Smart Waste Digital Twin Telemetry.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 8: LEADERBOARD                         -->
+        <!-- ========================================== -->
+        <section id="tab-leaderboard" class="tab-pane hidden fade-in">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold mb-2">
+                        <i class="fa-solid fa-graduation-cap"></i> DSU Eco Champions
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">DSU Campus Eco-Warrior Leaderboard</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2">Earn 10 Eco-Points with every verified waste scan across DSU Harohalli academic blocks, cafeterias, and hostels.</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+                    <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Top Campus Environmental Contributors</h3>
+                            <p class="text-xs text-slate-400">Updated in real-time with verified student &amp; faculty classifications</p>
+                        </div>
+                        <button onclick="loadLeaderboard()" class="text-slate-400 hover:text-emerald-600 transition text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrows-rotate text-xs"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div id="leaderboard-table-container" class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-800/60 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                                    <th class="py-4 px-6 text-center w-20">Rank</th>
+                                    <th class="py-4 px-6">DSU Contributor</th>
+                                    <th class="py-4 px-6 text-center">Verified Scans</th>
+                                    <th class="py-4 px-6 text-right">Eco-Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-tbody" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 9: REVIEWS                             -->
+        <!-- ========================================== -->
+        <section id="tab-reviews" class="tab-pane hidden fade-in">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">DSU Campus Feedback &amp; Reviews</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2">Read experiences from students and faculty across Dayananda Sagar University Harohalli Campus.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1">
+                        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-7 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-28">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Leave a Campus Review</h3>
+                            <p class="text-xs text-slate-400 mb-5">How has DSU EcoTwin assisted waste segregation in your department or hostel?</p>
+
+                            <form id="review-form" onsubmit="handleReviewSubmit(event)" class="space-y-4">
+                                <div>
+                                    <label for="review-name" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                                        Your Name / Department <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="review-name" required placeholder="e.g. Rahul Sharma (DSU CSE)" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">Rating <span class="text-red-500">*</span></label>
+                                    <div class="star-rating flex items-center gap-1.5" id="star-rating-selector">
+                                        <i class="fa-solid fa-star star" data-value="1"></i>
+                                        <i class="fa-solid fa-star star" data-value="2"></i>
+                                        <i class="fa-solid fa-star star" data-value="3"></i>
+                                        <i class="fa-solid fa-star star" data-value="4"></i>
+                                        <i class="fa-solid fa-star star" data-value="5"></i>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="review-comment" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">Comment <span class="text-red-500">*</span></label>
+                                    <textarea id="review-comment" required rows="4" placeholder="Share your experience on campus waste segregation..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"></textarea>
+                                </div>
+
+                                <button type="submit" id="btn-submit-review" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 transition">
+                                    <i class="fa-solid fa-paper-plane mr-1.5"></i> Submit Review
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div class="flex items-center gap-6">
+                                <div class="text-center sm:text-left">
+                                    <div id="avg-rating-value" class="text-5xl font-extrabold text-slate-900 dark:text-white">4.8</div>
+                                    <div class="text-xs text-slate-400 font-medium mt-1">out of 5 stars</div>
+                                </div>
+                                <div class="border-l border-slate-200 dark:border-slate-700 pl-6 space-y-1">
+                                    <div id="avg-rating-stars" class="flex text-amber-400 text-lg gap-1"></div>
+                                    <p id="total-reviews-count" class="text-xs text-slate-500 font-medium">Verified Campus Feedback</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-medium text-xs">
+                                <i class="fa-solid fa-graduation-cap"></i> DSU Campus Community
+                            </span>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                                <h3 class="font-bold text-slate-900 dark:text-white text-lg">Recent Campus Reviews</h3>
+                                <button onclick="loadReviews()" class="text-slate-400 hover:text-emerald-600 transition text-sm">
+                                    <i class="fa-solid fa-arrows-rotate text-xs"></i> Refresh
+                                </button>
+                            </div>
+                            <div id="reviews-list" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ====================================================================== -->
+    <!-- FEATURE 1: 🎤 TRILINGUAL ECOBOT VOICE ASSISTANT PILL (EN / KN / HI)     -->
+    <!-- ====================================================================== -->
+    <div id="ecobot-voice-bar-wrapper">
+        <!-- Floating Speech Response Bubble -->
+        <div id="ecobot-speech-bubble" class="animate-bounce-short">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+                    <i class="fa-solid fa-robot"></i>
+                    <span id="ecobot-bubble-title">EcoBot Assistant</span>
+                    <span id="ecobot-lang-tag" class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">EN</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="translateSpeechBubble()" title="Translate via Google" class="text-blue-400 hover:text-blue-300 text-xs">
+                        <i class="fa-brands fa-google"></i>
+                    </button>
+                    <button onclick="closeEcoBotBubble()" class="text-slate-400 hover:text-white text-xs">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <p id="ecobot-speech-text" class="mt-1 text-slate-200">Listening for your voice...</p>
+        </div>
+
+        <!-- Quick Voice Chips (Dynamic by Language) -->
+        <div class="ecobot-quick-chips" id="ecobot-quick-chips-container">
+            <!-- Populated dynamically based on EN / KN / HI -->
+        </div>
+
+        <!-- The Floating Glassmorphic Pill -->
+        <div class="ecobot-voice-pill" id="ecobot-pill-container">
+            <!-- Pulsing Mic Button -->
+            <button type="button" id="ecobot-mic-btn" onclick="toggleEcoBotVoice()" class="ecobot-mic-btn" title="Click to speak (English, Kannada, Hindi)">
+                <i class="fa-solid fa-microphone" id="ecobot-mic-icon"></i>
+            </button>
+
+            <!-- Dynamic Waveform Visualizer -->
+            <div id="ecobot-waveform" class="ecobot-waveform">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+
+            <!-- Language Switcher Pill (EN / KN / HI) -->
+            <div class="flex items-center bg-slate-800/90 rounded-full p-0.5 border border-slate-700/80 mr-1 shrink-0">
+                <button type="button" onclick="setEcoBotLanguage('en')" id="ecobot-lang-en" class="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-emerald-600 transition" title="English">EN</button>
+                <button type="button" onclick="setEcoBotLanguage('kn')" id="ecobot-lang-kn" class="px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-300 hover:text-white transition" title="ಕನ್ನಡ (Kannada)">ಕನ್ನಡ</button>
+                <button type="button" onclick="setEcoBotLanguage('hi')" id="ecobot-lang-hi" class="px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-300 hover:text-white transition" title="हिन्दी (Hindi)">हिंदी</button>
+            </div>
+
+            <!-- Voice Transcript / Query Input -->
+            <input type="text" id="ecobot-voice-input" placeholder="Ask EcoBot or speak in English, Kannada, or Hindi..." class="ecobot-input" onkeydown="handleVoiceInputKey(event)">
+
+            <!-- Voice Synthesis Audio Speaker Toggle -->
+            <button type="button" id="ecobot-tts-toggle" onclick="toggleEcoBotTTS()" title="Mute/Unmute Spoken Audio" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-emerald-400 flex items-center justify-center text-xs transition">
+                <i class="fa-solid fa-volume-high" id="ecobot-tts-icon"></i>
+            </button>
+
+            <!-- Send Action Button -->
+            <button type="button" onclick="sendEcoBotVoiceQuery()" class="w-8 h-8 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center text-xs transition">
+                <i class="fa-solid fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- FEATURE 2: 📊 EXECUTIVE DAILY MUNICIPAL REPORT MODAL & PRINT DOSSIER   -->
+    <!-- ====================================================================== -->
+    <div id="executive-report-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm items-center justify-center p-4">
+        <div class="report-dossier-card">
+            <!-- Modal Header Actions -->
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between no-print bg-slate-50 dark:bg-slate-800/60 rounded-t-3xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-md">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Executive Daily Municipal Waste Audit Report</h3>
+                        <p class="text-xs text-slate-500">Dayananda Sagar University • Smart Campus Infrastructure Authority</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="exportExecutiveReportPDF()" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-200 transition">
+                        <i class="fa-solid fa-print"></i> <span>Print / Save PDF</span>
+                    </button>
+                    <button onclick="downloadTelemetryCSV()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition">
+                        <i class="fa-solid fa-file-csv"></i> <span>Download CSV</span>
+                    </button>
+                    <button onclick="copyExecutiveSummary()" class="inline-flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition" title="Copy to clipboard">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                    <button onclick="closeExecutiveReportModal()" class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 flex items-center justify-center text-sm transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PRINTABLE OFFICIAL DOSSIER CONTENT -->
+            <div id="executive-printable-report" class="p-6 md:p-10 space-y-6">
+                <!-- Institutional Letterhead -->
+                <div class="report-official-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="report-seal-badge">Official Audit Dossier</span>
+                            <span class="text-xs font-mono text-slate-500 dark:text-slate-400" id="report-doc-id">DSU-SWM-2026-REP</span>
+                        </div>
+                        <h1 class="text-2xl font-black text-slate-900 dark:text-white mt-2">MUNICIPAL SMART WASTE &amp; EMISSION COMPLIANCE AUDIT</h1>
+                        <p class="text-xs text-slate-500 font-medium">Dayananda Sagar University (DSU) Harohalli Campus • In Co-ordination with Karnataka Municipal Corporation</p>
+                    </div>
+                    <div class="text-right sm:border-l sm:pl-6 border-slate-200 dark:border-slate-800">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Audit Timestamp</div>
+                        <div class="text-sm font-bold text-slate-800 dark:text-slate-200 font-mono" id="report-live-time">16-Oct-2026 | 09:30 AM</div>
+                        <div class="text-[11px] text-emerald-600 font-semibold mt-0.5"><i class="fa-solid fa-check-double mr-1"></i>All IoT Nodes Verified</div>
+                    </div>
+                </div>
+
+                <!-- Executive KPI Scorecard -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                        <span class="text-[11px] font-bold uppercase text-emerald-700 dark:text-emerald-300">Bio-Diversion Rate</span>
+                        <div class="text-2xl font-black text-emerald-900 dark:text-emerald-100 mt-1" id="rep-kpi-diversion">74.2%</div>
+                        <span class="text-[10px] text-emerald-600">Wet waste diverted to biogas</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800">
+                        <span class="text-[11px] font-bold uppercase text-blue-700 dark:text-blue-300">Fleet Distance Saved</span>
+                        <div class="text-2xl font-black text-blue-900 dark:text-blue-100 mt-1" id="rep-kpi-dist">9.4 km</div>
+                        <span class="text-[10px] text-blue-600">Via TSP route optimization</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
+                        <span class="text-[11px] font-bold uppercase text-purple-700 dark:text-purple-300">CO2 Emissions Offset</span>
+                        <div class="text-2xl font-black text-purple-900 dark:text-purple-100 mt-1" id="rep-kpi-co2">-8.3 kg</div>
+                        <span class="text-[10px] text-purple-600">Avoided diesel emissions</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                        <span class="text-[11px] font-bold uppercase text-amber-700 dark:text-amber-300">Full Bin Alarms</span>
+                        <div class="text-2xl font-black text-amber-900 dark:text-amber-100 mt-1" id="rep-kpi-alarms">1 Bin</div>
+                        <span class="text-[10px] text-amber-600">Central Food Court (>80%)</span>
+                    </div>
+                </div>
+
+                <!-- Zone-by-Zone IoT Telemetry Matrix -->
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-emerald-600"></i>
+                        <span>Campus Smart Bin Telemetry Status (HC-SR04 &amp; MQ-135 Sensors)</span>
+                    </h3>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase font-bold">
+                                <tr>
+                                    <th class="p-3">Bin Code</th>
+                                    <th class="p-3">Zone / Campus Landmark</th>
+                                    <th class="p-3">Fill Level</th>
+                                    <th class="p-3">Gas (MQ-135)</th>
+                                    <th class="p-3">Weight</th>
+                                    <th class="p-3">Battery</th>
+                                    <th class="p-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-bins-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Municipal Seal & Authorized Signatures -->
+                <div class="pt-6 border-t-2 border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-500">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl border-2 border-emerald-600 flex items-center justify-center font-black text-emerald-700 text-lg">
+                            DSU
+                        </div>
+                        <div>
+                            <div class="font-bold text-slate-900 dark:text-white">Dayananda Sagar University</div>
+                            <div>Office of Campus Sustainability &amp; Municipal Smart Twin</div>
+                        </div>
+                    </div>
+                    <div class="text-center sm:text-right">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 font-mono">DIGITALLY VERIFIED SIGNATURE</div>
+                        <div class="text-[11px] text-slate-400">Chief Environmental Officer • Municipal Audit Officer</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-emerald-100 dark:border-slate-800 mt-16 py-8 transition-colors relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-leaf text-emerald-600 text-lg"></i>
+                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">DSU EcoTwin &copy; 2026 - Dayananda Sagar University, Harohalli Campus</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="openExecutiveReportModal()" class="text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-800 font-bold px-3 py-1 rounded-full flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Export Municipal Audit</span>
+                </button>
+                <span class="text-xs text-slate-500 font-medium px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+                    <i class="fa-solid fa-microchip text-emerald-600 mr-1"></i> Real-time Vision AI • Trilingual Voice • IoT Twin
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Google Translate Initialization Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,kn,hi',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- Local Application Logic -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
